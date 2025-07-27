@@ -9,6 +9,7 @@ A robust and user-friendly timesheet management solution built with **Google App
 Experience the application firsthand:
 
 [**TEST THE APP HERE**](https://script.google.com/macros/s/AKfycbxavUCJW7lLACX7OEtr8rLkIETL1-bLayxiNnsOXTuM-m9skNS-yMPPjn0LmvjFTNqa/exec)
+[**TEST THE GOOGLESHEET/COPY**](https://docs.google.com/spreadsheets/d/1NxONLSP_O9Av5C6cvZr2yEvJZhOcpEUg0B4mSYjRpUQ/edit?gid=1307993730#gid=1307993730)
 
 ---
 
