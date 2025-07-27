@@ -1,119 +1,134 @@
-Timesheet Auckland Pest - Google Sheets Web App
-A comprehensive timesheet management application built with Google Apps Script and powered by Google Sheets. This tool provides a mobile-friendly web app for technicians to clock in/out, add daily or weekly timesheets, and an admin interface within the spreadsheet to generate payroll and overtime reports.
+# Timesheet Auckland Pest - Google Sheets Web App
 
-Features
-Mobile-First Web App: A clean, full-screen interface designed for use on mobile devices with increased font sizes for readability.
+A robust and user-friendly timesheet management solution built with **Google Apps Script** and powered by **Google Sheets**. This application provides a **mobile-friendly web app** for technicians to effortlessly clock in/out and manage their timesheets, alongside an **intuitive admin interface** within the spreadsheet for comprehensive payroll and overtime reporting.
 
-Dynamic Configuration: App name, branches, and divisions are managed directly from a dedicated "OrgSetup" sheet.
+---
 
-<img width="356" height="188" alt="image" src="https://github.com/user-attachments/assets/4eb2aedc-2a9b-4f3c-94cb-c6f7bbbcae33" />
+## 🚀 Test the Application
 
-<img width="515" height="844" alt="image" src="https://github.com/user-attachments/assets/27acc2d8-7c0a-4d17-a25d-a193ec37ac67" />
+Experience the application firsthand:
 
-User Registration: New users are automatically prompted to register their details upon first use, with options populated from the "OrgSetup" sheet.
+[**TEST THE APP HERE**](https://script.google.com/macros/s/AKfycbxavUCJW7lLACX7OEtr8rLkIETL1-bLayxiNnsOXTuM-m9skNS-yMPPjn0LmvjFTNqa/exec)
 
-Clock In / Clock Out: A proper modal-based interface for starting and ending work shifts.
+---
 
-<img width="512" height="838" alt="image" src="https://github.com/user-attachments/assets/0350fd86-b651-4276-a98b-c1800874506e" />
+## ✨ Features
 
-Flexible Timesheet Entry:
+This application is packed with features designed for efficiency and ease of use:
 
-<img width="512" height="836" alt="image" src="https://github.com/user-attachments/assets/4310bbbf-05ee-4fa8-bf1b-cd35d39b18ac" />
+* **Mobile-First Web App:** Enjoy a **clean, full-screen interface** specifically designed for mobile devices, featuring **increased font sizes** for optimal readability and accessibility on the go.
 
-Weekly: 
+    <img width="356" height="188" alt="image" src="https://github.com/user-attachments/assets/4eb2aedc-2a9b-4f3c-94cb-c6f7bbbcae33" />
 
-<img width="309" height="686" alt="image" src="https://github.com/user-attachments/assets/8bfded76-a751-4a29-8096-91eef030d953" />
+    <img width="515" height="844" alt="Mobile Dashboard" src="https://github.com/user-attachments/assets/27acc2d8-7c0a-4d17-a25d-a193ec37ac67" />
 
-Edit the current or previous week's entries directly from the main screen.
+* **Dynamic Configuration:** Easily manage core application settings like **app name, branches, and divisions** directly from a dedicated `OrgSetup` sheet within your Google Sheet.
 
-Add entries for a full week, with options for work/leave type.
+* **Seamless User Registration:** New users are **automatically prompted to register their details** upon their first use. Options for branches and divisions are dynamically populated from the `OrgSetup` sheet, ensuring consistent data.
 
-Automated Calculations: The app automatically handles overtime rules, 30-minute break deductions, and weekly hour totals.
+* **Effortless Clock In / Clock Out:** A dedicated **modal-based interface** provides a clear and straightforward way for technicians to start and end their work shifts.
 
-Admin Reporting Suite:
+    <img width="512" height="838" alt="image" src="https://github.com/user-attachments/assets/0350fd86-b651-4276-a98b-c1800874506e" />
 
-A custom sidebar in the Google Sheet for administrators with loading indicators.
+* **Flexible Timesheet Entry:**
+    * **Intuitive Interface:** Add entries for a full week, with clear options for **work or leave types**.
 
-Select a specific week to generate reports.
+        <img width="512" height="836" alt="Timesheet Entry Screen" src="https://github.com/user-attachments/assets/4310bbbf-05ee-4fa8-bf1b-cd35d39b18ac" />
 
-Generate a detailed weekly Payroll Report, aggregating hours by employee.
+    * **Weekly View:** A streamlined view for managing weekly entries.
 
-Generate a weekly Overtime (OT) Report for manager approval.
+        <img width="309" height="686" alt="Weekly Timesheet View" src="https://github.com/user-attachments/assets/8bfded76-a751-4a29-8096-91eef030d953" />
 
-Secure & Private: Each user can only see and edit their own timesheet data, and a sanitization function prevents formula injection into the spreadsheet.
+    * **Easy Editing:** *Edit current or previous week's entries directly from the main screen.*
 
-Setup Instructions
-To set up this application, follow these steps carefully.
+* **Automated Calculations:** The app intelligently handles complex calculations, including **overtime rules, 30-minute break deductions, and weekly hour totals**, significantly reducing manual effort.
 
-1. Create the Google Sheet
-Create a new Google Sheet. You can name it whatever you like (e.g., "Company Timesheets").
+* **Comprehensive Admin Reporting Suite:**
+    * Access a **custom sidebar** within the Google Sheet specifically for administrators, complete with useful loading indicators.
+    * **Generate detailed reports** by selecting a specific week.
+    * Produce a **detailed weekly Payroll Report**, aggregating hours by employee for accurate compensation.
+    * Generate a weekly **Overtime (OT) Report** for efficient manager approval and oversight.
 
-Create a sheet (tab) named Timesheets. The first row must have the following headers exactly:
+* **Secure & Private:** Each user is only able to **view and edit their own timesheet data**, ensuring data privacy. A robust **sanitization function** is implemented to prevent formula injection into the spreadsheet, enhancing security.
 
-Email, Date, StartTime, FinishTime, Overtime, Type, Comment, TimesheetID
+---
 
-Create another sheet (tab) named Employee. The first row must have the following headers exactly:
+## ⚙️ Setup Instructions
 
-Email, Name, Role, Branch, Division, Payroll ID, Supervisor
+To get your Timesheet Auckland Pest application up and running, follow these steps carefully:
 
-[IMPORTANT] Create a new sheet (tab) named OrgSetup. This sheet controls the app's configuration:
+### 1. Create the Google Sheet
 
-In cell A2, enter your organization's name. This will appear in the app's header.
+Start by setting up your central data repository:
 
-In column B, starting from cell B2, list all your company's branches
+* Create a **new Google Sheet**. You can name it whatever you like (e.g., "Company Timesheets").
 
-In column C, starting from cell C2, list all your company's divisions
+* Create a new sheet (tab) named `Timesheets`. The **first row must have the following headers exactly**:
+    `Email, Date, StartTime, FinishTime, Overtime, Type, Comment, TimesheetID`
 
-2. Create the Google Apps Script Project
-In your Google Sheet, go to Extensions > Apps Script.
+* Create another new sheet (tab) named `Employee`. The **first row must have the following headers exactly**:
+    `Email, Name, Role, Branch, Division, Payroll ID, Supervisor`
 
-This will open the Apps Script editor. You will see a default Code.gs file.
+* **[IMPORTANT]** Create a new sheet (tab) named `OrgSetup`. This sheet is crucial for the app's configuration:
+    * In cell `A2`, enter your **organization's name**. This will appear in the app's header.
+    * In column `B`, starting from cell `B2`, list all your company's **branches**.
+    * In column `C`, starting from cell `C2`, list all your company's **divisions**.
 
-Delete any existing code in Code.gs and replace it with the contents of the Code.gs file from this repository.
+### 2. Create the Google Apps Script Project
 
-Create a new HTML file by clicking the + icon next to "Files" and selecting HTML. Name the file index.html (be sure to include the .html extension). Copy the contents of index.html from this repository into it.
+Integrate the application's code with your Google Sheet:
 
-Create another new HTML file and name it Sidebar.html. Copy the contents of Sidebar.html from this repository into it.
+* In your Google Sheet, go to **Extensions > Apps Script**. This will open the Apps Script editor. You'll see a default `Code.gs` file.
 
-Enable the manifest file:
+* **Delete any existing code** in `Code.gs` and replace it with the content from the `Code.gs` file in this repository.
 
-Click on Project Settings (the ⚙️ icon) on the left.
+* Create a new **HTML file** by clicking the `+` icon next to "Files" and selecting `HTML`. Name the file `index.html` (be sure to include the `.html` extension). Copy the contents from the `index.html` file in this repository into it.
 
-Check the box for "Show 'appsscript.json' manifest file in editor".
+* Create another new **HTML file** and name it `Sidebar.html`. Copy the contents from the `Sidebar.html` file in this repository into it.
 
-A new appsscript.json file will appear. Replace its contents with the appsscript.json file from this repository.
+* **Enable the manifest file:**
+    * Click on **Project Settings** (the ⚙️ icon) on the left.
+    * Check the box for "Show 'appsscript.json' manifest file in editor".
+    * A new `appsscript.json` file will appear. Replace its contents with the `appsscript.json` file from this repository.
 
-Click the Save project icon (💾).
+* Click the **Save project icon** (💾).
 
-3. Deploy the Web App
-At the top right of the Apps Script editor, click the Deploy button and select New deployment.
+### 3. Deploy the Web App
 
-Click the gear icon next to "Select type" and choose Web app.
+Make your application accessible:
 
-In the configuration options:
+* At the top right of the Apps Script editor, click the **Deploy** button and select **New deployment**.
 
-Description: Give your deployment a name (e.g., "Version 1").
+* Click the gear icon next to "Select type" and choose **Web app**.
 
-Execute as: Select Me.
+* In the configuration options:
+    * **Description:** Give your deployment a name (e.g., "Version 1").
+    * **Execute as:** Select `Me`.
+    * **Who has access:** Select `Anyone with Google account`.
 
-Who has access: Select Anyone with Google account.
+* Click **Deploy**.
 
-Click Deploy.
+* Google will ask you to **Authorize access**. Follow the prompts. *You may see a screen saying "Google hasn't verified this app." Click `Advanced`, then "Go to [Your Project Name] (unsafe)". Grant the necessary permissions.*
 
-Google will ask you to Authorize access. Follow the prompts. You may see a screen saying "Google hasn't verified this app." Click Advanced, then "Go to [Your Project Name] (unsafe)". Grant the necessary permissions.
+* After authorizing, a "Deployment successfully updated" dialog will appear with a **Web app URL**. This is the link to your timesheet application that you will share with your technicians.
 
-After authorizing, a "Deployment successfully updated" dialog will appear with a Web app URL. This is the link to your timesheet application.
+---
 
-Usage
-Technicians: Share the Web app URL with your technicians. They can open it on any device, and it is optimized for mobile use. They can also save it to their phone's home screen.
+## 👩‍💻 Usage
 
-Administrators: To generate reports, open the Google Sheet, and a new Admin menu will appear. Click it and select Open Report Generator to use the sidebar.
+Here's how to use the deployed application:
 
-Code Files
-Code.gs: Contains all the backend logic, including functions to handle data fetching, saving, and the payroll/OT report generation.
+* **Technicians:** Share the **Web app URL** with your technicians. They can open it on any device, and it's **optimized for mobile use**. They can also save it to their phone's home screen for quick access.
 
-index.html: The frontend user interface for the main web application.
+* **Administrators:** To generate reports, simply **open the Google Sheet**. A new `Admin` menu will appear. Click it and select `Open Report Generator` to use the powerful sidebar reporting tools.
 
-Sidebar.html: The user interface for the admin sidebar within the Google Sheet.
+---
 
-appsscript.json: The manifest file that configures the project's permissions and settings.
+## 📂 Code Files
+
+This repository contains the following key files:
+
+* `Code.gs`: Contains all the **backend logic**, including functions to handle data fetching, saving, and the payroll/OT report generation.
+* `index.html`: The **frontend user interface** for the main web application.
+* `Sidebar.html`: The user interface for the **admin sidebar** within the Google Sheet.
+* `appsscript.json`: The **manifest file** that configures the project's permissions and settings.
