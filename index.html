@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <base target="_top">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⏰</text></svg>">
+    <style>
+        html {
+            font-size: 38px;
+        }
+        html, body {
+            height: 100%;
+            overflow: hidden;
+        }
+        body { 
+            font-family: 'Inter', sans-serif; 
+        }
+        .screen { display: none; }
+        .screen.active { 
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+        }
+        .week-content.collapsed { display: none; }
+        .week-header { cursor: pointer; }
+        .day-card-editable { cursor: pointer; transition: background-color 0.2s ease-in-out; }
+        .day-card-editable:hover { background-color: #f9fafb; }
+        .loader-overlay, .modal-overlay { 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0,0,0,0.6); 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            z-index: 9999; 
+            backdrop-filter: blur(4px);
+        }
+        .loader { border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <div id="loader" class="loader-overlay" style="display: none;"><div class="loader"></div></div>
+    <div id="clock-modal" class="modal-overlay" style="display: none;"></div>
+    <div id="registration-modal" class="modal-overlay" style="display: none;"></div>
+
+    <div id="app" class="w-full h-full bg-white flex flex-col">
+        <header class="bg-blue-600 text-white p-4 flex justify-between items-center flex-shrink-0">
+            <h1 id="app-title" class="text-xl font-bold flex items-center"><i class="fas fa-clock mr-3"></i> Timesheet</h1>
+            <div id="user-info" class="text-sm"></div>
+        </header>
+
+        <main class="p-6 flex-grow overflow-hidden flex flex-col">
+            <!-- Screen: Finished Timesheets -->
+            <div id="finished-screen" class="screen active">
+                <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                    <h2 class="text-2xl font-bold text-gray-800">Timesheets</h2>
+                    <button id="clock-btn" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300"></button>
+                </div>
+                <div id="timesheet-list" class="space-y-6 flex-grow overflow-y-auto pr-2"></div>
+                <div class="mt-6 space-y-3 flex-shrink-0">
+                     <button id="add-day-btn" class="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300">
+                        <i class="fas fa-calendar-day mr-2"></i> Add/Edit Today
+                    </button>
+                    <button id="add-week-btn" class="w-full bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-4 rounded-lg text-lg transition duration-300">
+                        <i class="fas fa-calendar-plus mr-2"></i> Add Full Week
+                    </button>
+                </div>
+            </div>
+            
+            <!-- Screen: Add/Edit Day -->
+            <div id="edit-day-screen" class="screen">
+                <div class="flex justify-between items-center mb-4 flex-shrink-0">
+                    <h2 id="edit-day-header" class="text-2xl font-bold text-gray-800">Edit Day</h2>
+                </div>
+                <div class="flex-grow overflow-y-auto pr-2 space-y-4">
+                    <div id="day-entry-list" class="space-y-4"></div>
+                    <button id="add-entry-btn" class="w-full bg-blue-100 hover:bg-blue-200 text-blue-800 font-bold py-2 px-4 rounded-lg transition duration-300">
+                        <i class="fas fa-plus mr-2"></i> Add Another Entry
+                    </button>
+                </div>
+                <div class="mt-4 p-3 border rounded-lg bg-gray-50 flex-shrink-0">
+                    <div class="flex items-center justify-between">
+                        <label for="day-overtime-checkbox" class="font-semibold text-gray-700">Enable Overtime</label>
+                        <input type="checkbox" id="day-overtime-checkbox" class="h-5 w-5 text-blue-600 rounded focus:ring-blue-500">
+                    </div>
+                </div>
+                <div class="mt-6 flex space-x-4 flex-shrink-0">
+                    <button id="cancel-day-edit-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Cancel</button>
+                    <button id="save-day-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Save Day</button>
+                </div>
+            </div>
+
+            <!-- Screen: Add Full Week -->
+            <div id="add-week-screen" class="screen">
+                <div class="flex-shrink-0">
+                    <h2 id="add-week-header" class="text-2xl font-bold text-gray-800 mb-4">Add Weekly Timesheet</h2>
+                    <p id="add-week-subheader" class="text-sm text-gray-600 mb-4">Fill in the hours for the week. Only rows with both a start and finish time will be saved.</p>
+                </div>
+                <div id="weekly-entry-form" class="space-y-4 flex-grow overflow-y-auto pr-2"></div>
+                <div class="mt-6 flex space-x-4 flex-shrink-0">
+                    <button id="cancel-week-add-btn" class="w-full bg-gray-500 hover:bg-gray-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Cancel</button>
+                    <button id="save-week-btn" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded-lg transition duration-300">Save Week</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+      // --- GLOBAL STATE ---
+      let activeTimecard = null;
+      let currentEditingDate = null;
+      let orgSetup = {}; // To store organization data
+      const loader = document.getElementById('loader');
+      const clockModal = document.getElementById('clock-modal');
+      const registrationModal = document.getElementById('registration-modal');
+
+      // --- UTILS ---
+      const showLoader = () => loader.style.display = 'flex';
+      const hideLoader = () => loader.style.display = 'none';
+      const toISODateString = (date) => date.toISOString().split('T')[0];
+
+      function showScreen(screenName) {
+        document.querySelectorAll('main > .screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenName).classList.add('active');
+      }
+
+      function handleServerError(error) {
+        hideLoader();
+        alert('An error occurred: ' + (error.message || 'Unknown error. Please refresh.'));
+      }
+
+      function reloadApp() {
+        showScreen('finished-screen');
+        initializeApp();
+      }
+
+      // --- RENDER FUNCTIONS ---
+      function renderTimesheetList(weeks) {
+        const listEl = document.getElementById('timesheet-list');
+        listEl.innerHTML = '';
+        if (!weeks || weeks.length === 0) {
+          listEl.innerHTML = '<p class="text-center text-gray-500">No timesheet entries found.</p>';
+          return;
+        }
+
+        weeks.forEach(week => {
+          const weekContainer = document.createElement('div');
+          const isCollapsed = !week.isWeekEditable;
+          
+          let totalHours = 0;
+          week.days.forEach(d => d.entries.forEach(e => {
+              if (e.duration) {
+                  const parts = e.duration.match(/(\d+)h|(\d+)m/g) || [];
+                  parts.forEach(part => {
+                      if (part.includes('h')) totalHours += parseInt(part);
+                      if (part.includes('m')) totalHours += parseInt(part) / 60;
+                  });
+              }
+          }));
+
+          weekContainer.innerHTML = `
+            <div class="week-header flex justify-between items-center p-2 rounded-lg bg-gray-100">
+              <div>
+                <h3 class="text-lg font-semibold text-gray-700">${week.weekLabel}</h3>
+                <p class="text-xs text-gray-500 font-medium">Total: ${totalHours.toFixed(2)} hours</p>
+              </div>
+              <i class="fas fa-chevron-down transition-transform ${isCollapsed ? '' : 'rotate-180'}"></i>
+            </div>
+            <div class="week-content space-y-2 pt-3 pl-2 ${isCollapsed ? 'collapsed' : ''}"></div>
+          `;
+
+          const weekContent = weekContainer.querySelector('.week-content');
+          
+          const daysToRender = week.isWeekEditable 
+            ? [...week.days].sort((a, b) => new Date(a.dateKey) - new Date(b.dateKey))
+            : week.days;
+
+          daysToRender.forEach(day => {
+            const dayCard = createDayCard(day, week.isWeekEditable);
+            weekContent.appendChild(dayCard);
+          });
+          
+          listEl.appendChild(weekContainer);
+          weekContainer.querySelector('.week-header').addEventListener('click', (e) => {
+            e.currentTarget.querySelector('i').classList.toggle('rotate-180');
+            weekContainer.querySelector('.week-content').classList.toggle('collapsed');
+          });
+        });
+      }
+
+      function createDayCard(day, isEditable) {
+        const dayCard = document.createElement('div');
+        dayCard.className = `p-3 rounded-lg border ${isEditable ? 'day-card-editable border-blue-200' : 'border-gray-200'}`;
+        dayCard.dataset.date = day.dateKey;
+
+        let entriesHTML = day.entries.map(entry => `
+          <div class="flex justify-between items-start mt-2 text-sm">
+            <span class="text-gray-600">${entry.startTime} - ${entry.endTime}</span>
+            ${entry.comments ? `<span class="text-gray-500 italic truncate ml-2" title="${entry.comments}">${entry.comments}</span>` : ''}
+            <span class="font-semibold text-blue-600 ml-2">${entry.duration}</span>
+          </div>
+        `).join('');
+        if (day.entries.length === 0) entriesHTML = '<p class="text-sm text-gray-400">No entries</p>';
+        
+        dayCard.innerHTML = `
+          <div class="flex justify-between">
+            <p class="font-bold text-gray-800">${day.dayLabel}</p>
+            <div class="text-right">
+                <p class="font-bold text-lg">${day.duration}</p>
+                ${day.overtimeDuration && day.overtimeDuration !== '0m' ? `<span class="inline-block mt-1 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">OT: ${day.overtimeDuration}</span>` : ''}
+            </div>
+          </div>
+          ${entriesHTML}
+        `;
+        if (isEditable) dayCard.addEventListener('click', () => showDayEditor(day.dateKey));
+        return dayCard;
+      }
+      
+      // --- DAY EDITOR ---
+      function showDayEditor(dateKey) {
+        showLoader();
+        currentEditingDate = dateKey;
+        google.script.run
+          .withSuccessHandler(populateDayEditor)
+          .withFailureHandler(handleServerError)
+          .getEntriesForDay(dateKey);
+      }
+
+      function populateDayEditor(data) {
+        if (data.error) return handleServerError(data.error);
+        const date = new Date(currentEditingDate + 'T00:00:00');
+        document.getElementById('edit-day-header').textContent = date.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' });
+        
+        const listEl = document.getElementById('day-entry-list');
+        listEl.innerHTML = '';
+        if (data.entries.length > 0) {
+          data.entries.forEach(entry => addEntryToDayForm(entry));
+        } else {
+          addEntryToDayForm();
+        }
+        document.getElementById('day-overtime-checkbox').checked = data.isOvertimeEnabled;
+        hideLoader();
+        showScreen('edit-day-screen');
+      }
+
+      function addEntryToDayForm(entry = {}) {
+        const entryId = entry.id || 'new-' + crypto.randomUUID();
+        const entryItem = document.createElement('div');
+        entryItem.className = 'day-entry-item p-3 border rounded-lg bg-gray-50 space-y-2';
+        entryItem.dataset.id = entryId;
+        
+        const types = ["Work Hours", "Annual Leave", "Sick Leave", "Leave Without Pay", "Travel"];
+        const typeOptions = types.map(t => `<option value="${t}" ${entry.type === t ? 'selected' : ''}>${t}</option>`).join('');
+
+        entryItem.innerHTML = `
+          <div class="grid grid-cols-2 gap-2">
+            <input type="time" value="${entry.startTime || ''}" class="start-time w-full border-gray-300 rounded-md shadow-sm">
+            <input type="time" value="${entry.finishTime || ''}" class="finish-time w-full border-gray-300 rounded-md shadow-sm">
+          </div>
+          <div>
+            <label class="text-sm font-medium text-gray-600">Type</label>
+            <select class="type w-full mt-1 p-2 border border-gray-300 rounded-md">${typeOptions}</select>
+          </div>
+          <input type="text" value="${entry.comment || ''}" class="comments w-full border-gray-300 rounded-md shadow-sm" placeholder="Comment...">
+          <button class="delete-entry-btn text-red-500 hover:text-red-700 text-xs text-right">Delete Entry</button>
+        `;
+        document.getElementById('day-entry-list').appendChild(entryItem);
+        entryItem.querySelector('.delete-entry-btn').addEventListener('click', () => entryItem.remove());
+      }
+
+      function saveDay() {
+        showLoader();
+        const entries = [];
+        document.querySelectorAll('.day-entry-item').forEach(item => {
+          const startTime = item.querySelector('.start-time').value;
+          const finishTime = item.querySelector('.finish-time').value;
+          if (startTime && finishTime) {
+            entries.push({
+              id: item.dataset.id.startsWith('new-') ? null : item.dataset.id,
+              startTime, finishTime,
+              comment: item.querySelector('.comments').value,
+              type: item.querySelector('.type').value
+            });
+          }
+        });
+        const dataToSave = {
+          dateKey: currentEditingDate,
+          entries: entries,
+          isOvertimeEnabled: document.getElementById('day-overtime-checkbox').checked
+        };
+        google.script.run
+          .withSuccessHandler(reloadApp)
+          .withFailureHandler(handleServerError)
+          .updateDayEntries(dataToSave);
+      }
+
+      // --- ADD FULL WEEK ---
+      function showAddWeekScreen() {
+        const formEl = document.getElementById('weekly-entry-form');
+        formEl.innerHTML = '';
+        const today = new Date();
+        const dayOfWeek = today.getDay();
+        
+        let targetMonday;
+        if (dayOfWeek === 1) {
+            document.getElementById('add-week-subheader').textContent = "It's Monday! Please fill in the timesheet for last week.";
+            targetMonday = new Date(today);
+            targetMonday.setDate(today.getDate() - 7);
+        } else {
+            document.getElementById('add-week-subheader').textContent = "Fill in the hours for the current week. Only rows with both a start and finish time will be saved.";
+            targetMonday = new Date(today);
+            const diff = targetMonday.getDate() - dayOfWeek + (dayOfWeek === 0 ? -6 : 1);
+            targetMonday.setDate(diff);
+        }
+
+        const types = ["Work Hours", "Annual Leave", "Sick Leave", "Leave Without Pay", "Travel"];
+        const typeOptions = types.map(t => `<option value="${t}">${t}</option>`).join('');
+
+        for (let i = 0; i < 7; i++) {
+          const day = new Date(targetMonday);
+          day.setDate(targetMonday.getDate() + i);
+          const dayKey = toISODateString(day);
+          const formattedDate = day.toLocaleDateString('en-NZ', {day: '2-digit', month: '2-digit'});
+          const row = document.createElement('div');
+          row.className = 'p-3 border rounded-lg bg-gray-50 space-y-2';
+          row.dataset.date = dayKey;
+          row.innerHTML = `
+            <label class="font-semibold text-gray-700">${day.toLocaleDateString('en-US', {weekday: 'long'})} (${formattedDate})</label>
+            <div class="grid grid-cols-2 gap-2 mt-1">
+              <input type="time" class="start-time w-full border-gray-300 rounded-md">
+              <input type="time" class="end-time w-full border-gray-300 rounded-md">
+            </div>
+            <div>
+                <label class="text-sm font-medium text-gray-600">Type</label>
+                <select class="type w-full mt-1 p-2 border border-gray-300 rounded-md">${typeOptions}</select>
+            </div>
+            <input type="text" class="comments w-full border-gray-300 rounded-md" placeholder="Comment...">
+            <div class="flex items-center mt-1">
+              <input type="checkbox" id="ot-week-${i}" class="is-overtime h-4 w-4">
+              <label for="ot-week-${i}" class="ml-2 text-sm">Overtime</label>
+            </div>
+          `;
+          formEl.appendChild(row);
+        }
+        showScreen('add-week-screen');
+      }
+
+      function saveWeek() {
+        showLoader();
+        const weekData = [];
+        document.querySelectorAll('#weekly-entry-form > div').forEach(row => {
+          const startTime = row.querySelector('.start-time').value;
+          const finishTime = row.querySelector('.end-time').value;
+          if (startTime && finishTime) {
+            weekData.push({
+              date: row.dataset.date,
+              startTime, finishTime,
+              type: row.querySelector('.type').value,
+              comments: row.querySelector('.comments').value,
+              isOvertime: row.querySelector('.is-overtime').checked
+            });
+          }
+        });
+        google.script.run
+          .withSuccessHandler(reloadApp)
+          .withFailureHandler(handleServerError)
+          .addFullWeek(weekData);
+      }
+      
+      // --- CLOCK IN/OUT MODAL ---
+      function updateClockButton() {
+          const btn = document.getElementById('clock-btn');
+          if (activeTimecard) {
+              btn.innerHTML = '<i class="fas fa-stop-circle mr-2"></i> Clock Out';
+              btn.className = 'bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300';
+          } else {
+              btn.innerHTML = '<i class="fas fa-play-circle mr-2"></i> Clock In';
+              btn.className = 'bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300';
+          }
+      }
+
+      function handleClockClick() {
+        if (activeTimecard) {
+            showClockOutModal();
+        } else {
+            showClockInModal();
+        }
+      }
+
+      function showClockInModal() {
+        clockModal.style.display = 'flex';
+        clockModal.innerHTML = `
+            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm m-4">
+                <h3 class="text-2xl font-bold mb-4">Clock In</h3>
+                <div class="space-y-4">
+                    <div class="form-row">
+                        <label class="text-sm font-medium text-gray-600">Comment (optional)</label>
+                        <textarea id="clockInComment" rows="2" class="w-full mt-1 p-2 border border-gray-300 rounded-md"></textarea>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button id="cancelClockIn" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
+                    <button id="confirmClockIn" class="bg-green-500 text-white font-bold py-2 px-4 rounded-lg">Confirm</button>
+                </div>
+            </div>`;
+        
+        document.getElementById('cancelClockIn').addEventListener('click', () => clockModal.style.display = 'none');
+        document.getElementById('confirmClockIn').addEventListener('click', () => {
+            const comment = document.getElementById('clockInComment').value;
+            clockModal.style.display = 'none';
+            showLoader();
+            google.script.run.withSuccessHandler(reloadApp).withFailureHandler(handleServerError).doClockIn(comment);
+        });
+      }
+
+      function showClockOutModal() {
+        clockModal.style.display = 'flex';
+        const isChecked = activeTimecard.isOvertimeEnabled ? 'checked' : '';
+        clockModal.innerHTML = `
+            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm m-4">
+                <h3 class="text-2xl font-bold mb-4">Clock Out</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="text-sm font-medium text-gray-600">Original Start Time</label>
+                        <div class="mt-1 p-2 bg-gray-100 rounded-md text-center font-semibold">${activeTimecard.startTime}</div>
+                    </div>
+                    <div>
+                        <label for="clockOutComment" class="text-sm font-medium text-gray-600">Comment</label>
+                        <textarea id="clockOutComment" rows="2" class="w-full mt-1 p-2 border border-gray-300 rounded-md">${activeTimecard.comment || ''}</textarea>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <label for="clockOutOvertime" class="font-medium text-gray-700">Enable Overtime</label>
+                        <input type="checkbox" id="clockOutOvertime" class="h-5 w-5 text-blue-600 rounded" ${isChecked}>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button id="cancelClockOut" class="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded-lg">Cancel</button>
+                    <button id="confirmClockOut" class="bg-red-500 text-white font-bold py-2 px-4 rounded-lg">Confirm</button>
+                </div>
+            </div>`;
+
+        document.getElementById('cancelClockOut').addEventListener('click', () => clockModal.style.display = 'none');
+        document.getElementById('confirmClockOut').addEventListener('click', () => {
+            const comment = document.getElementById('clockOutComment').value;
+            const isOvertimeEnabled = document.getElementById('clockOutOvertime').checked;
+            clockModal.style.display = 'none';
+            showLoader();
+            google.script.run.withSuccessHandler(reloadApp).withFailureHandler(handleServerError).doClockOut(activeTimecard.timesheetId, comment, isOvertimeEnabled);
+        });
+      }
+
+      // --- REGISTRATION MODAL ---
+      function showRegistrationModal() {
+        registrationModal.style.display = 'flex';
+        
+        const branchOptions = orgSetup.branches.map(b => `<option>${b}</option>`).join('');
+        const divisionOptions = orgSetup.divisions.map(d => `<option>${d}</option>`).join('');
+
+        registrationModal.innerHTML = `
+            <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm m-4">
+                <h3 class="text-2xl font-bold mb-4">Welcome! Please Register</h3>
+                <p class="text-sm mb-4 text-gray-600">We need a few details to set up your account.</p>
+                <div class="space-y-4">
+                    <div>
+                        <label for="regName" class="text-sm font-medium text-gray-600">Full Name</label>
+                        <input type="text" id="regName" class="w-full mt-1 p-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label for="regBranch" class="text-sm font-medium text-gray-600">Branch</label>
+                        <select id="regBranch" class="w-full mt-1 p-2 border border-gray-300 rounded-md">${branchOptions}</select>
+                    </div>
+                    <div>
+                        <label for="regDivision" class="text-sm font-medium text-gray-600">Division</label>
+                        <select id="regDivision" class="w-full mt-1 p-2 border border-gray-300 rounded-md">${divisionOptions}</select>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-end gap-3">
+                    <button id="submitRegistrationBtn" class="bg-blue-600 text-white font-bold py-2 px-4 rounded-lg w-full">Save and Continue</button>
+                </div>
+            </div>`;
+        
+        document.getElementById('submitRegistrationBtn').addEventListener('click', submitRegistration);
+      }
+
+      function submitRegistration() {
+        const userInfo = {
+            name: document.getElementById('regName').value,
+            branch: document.getElementById('regBranch').value,
+            division: document.getElementById('regDivision').value,
+        };
+
+        if (!userInfo.name) {
+            alert('Please enter your full name.');
+            return;
+        }
+
+        showLoader();
+        registrationModal.style.display = 'none';
+
+        google.script.run
+            .withSuccessHandler(result => {
+                if (result.success) {
+                    reloadApp();
+                } else {
+                    handleServerError(result);
+                }
+            })
+            .withFailureHandler(handleServerError)
+            .registerNewUser(userInfo);
+      }
+
+      // --- INITIALIZATION ---
+      function initializeApp() {
+        showLoader();
+        google.script.run
+          .withSuccessHandler(initialData => {
+            orgSetup = initialData.orgSetup;
+            document.getElementById('app-title').innerHTML = `<i class="fas fa-clock mr-3"></i> ${orgSetup.orgName}`;
+
+            if (initialData.technicianName === 'Not Found') {
+                hideLoader();
+                showRegistrationModal();
+                return;
+            }
+
+            document.getElementById('user-info').textContent = `Technician: ${initialData.technicianName || 'N/A'}`;
+            activeTimecard = initialData.activeTimecard;
+            updateClockButton();
+
+            if (initialData.timesheetData.error) {
+              document.getElementById('timesheet-list').innerHTML = `<p class="text-red-500 text-center">${initialData.timesheetData.error}</p>`;
+            } else {
+              renderTimesheetList(initialData.timesheetData.weeks);
+            }
+            hideLoader();
+          })
+          .withFailureHandler(handleServerError)
+          .getInitialData();
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        document.getElementById('clock-btn').addEventListener('click', handleClockClick);
+        document.getElementById('add-week-btn').addEventListener('click', showAddWeekScreen);
+        document.getElementById('cancel-day-edit-btn').addEventListener('click', () => showScreen('finished-screen'));
+        document.getElementById('save-day-btn').addEventListener('click', saveDay);
+        document.getElementById('add-entry-btn').addEventListener('click', () => addEntryToDayForm());
+        document.getElementById('cancel-week-add-btn').addEventListener('click', () => showScreen('finished-screen'));
+        document.getElementById('save-week-btn').addEventListener('click', saveWeek);
+        
+        initializeApp();
+      });
+    </script>
+</body>
+</html>
