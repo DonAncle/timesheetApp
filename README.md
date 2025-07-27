@@ -6,11 +6,23 @@ Mobile-First Web App: A clean, full-screen interface designed for use on mobile 
 
 Dynamic Configuration: App name, branches, and divisions are managed directly from a dedicated "OrgSetup" sheet.
 
+<img width="356" height="188" alt="image" src="https://github.com/user-attachments/assets/4eb2aedc-2a9b-4f3c-94cb-c6f7bbbcae33" />
+
+<img width="515" height="844" alt="image" src="https://github.com/user-attachments/assets/27acc2d8-7c0a-4d17-a25d-a193ec37ac67" />
+
 User Registration: New users are automatically prompted to register their details upon first use, with options populated from the "OrgSetup" sheet.
 
 Clock In / Clock Out: A proper modal-based interface for starting and ending work shifts.
 
+<img width="512" height="838" alt="image" src="https://github.com/user-attachments/assets/0350fd86-b651-4276-a98b-c1800874506e" />
+
 Flexible Timesheet Entry:
+
+<img width="512" height="836" alt="image" src="https://github.com/user-attachments/assets/4310bbbf-05ee-4fa8-bf1b-cd35d39b18ac" />
+
+Weekly: 
+
+<img width="309" height="686" alt="image" src="https://github.com/user-attachments/assets/8bfded76-a751-4a29-8096-91eef030d953" />
 
 Edit the current or previous week's entries directly from the main screen.
 
