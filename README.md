@@ -58,11 +58,11 @@ Email, Name, Role, Branch, Division, Payroll ID, Supervisor
 
 [IMPORTANT] Create a new sheet (tab) named OrgSetup. This sheet controls the app's configuration:
 
-In cell A2, enter your organization's name (e.g., Timesheet Auckland Pest). This will appear in the app's header.
+In cell A2, enter your organization's name. This will appear in the app's header.
 
-In column B, starting from cell B2, list all your company's branches (e.g., UNI, CNI, SI).
+In column B, starting from cell B2, list all your company's branches
 
-In column C, starting from cell C2, list all your company's divisions (e.g., Rentokil, Initial, Ambius).
+In column C, starting from cell C2, list all your company's divisions
 
 2. Create the Google Apps Script Project
 In your Google Sheet, go to Extensions > Apps Script.
