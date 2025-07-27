@@ -1,4 +1,4 @@
-# Timesheet Auckland Pest - Google Sheets Web App
+# Timesheet - Google Sheets Web App
 
 A robust and user-friendly timesheet management solution built with **Google Apps Script** and powered by **Google Sheets**. This application provides a **mobile-friendly web app** for technicians to effortlessly clock in/out and manage their timesheets, alongside an **intuitive admin interface** within the spreadsheet for comprehensive payroll and overtime reporting.
 
